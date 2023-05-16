@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from "react";
 import "../App.css";
 import { Link, Outlet, json, useNavigate, useParams } from "react-router-dom";
-// import DeleteIcon from "@mui/icons-material/Delete";
+//import DeleteIcon from "@mui/icons-material/Delete";
 // import EditIcon from "@mui/icons-material/Edit";
 // import Pagination from "./Pagination";
 // import Search from "./Search";
-import {useSelector} from 'react-redux'
+import { useSelector, useDispatch } from "react-redux";
+import { deleteTransaction } from "../redux/ducks/TransactionReducer";
 //import { useGlobalContext } from "../context/TransactionContext";
 
 function Table(props) {
-
   const users = useSelector((state) => state.transactions.value);
-  console.log(users,"userss");
+  console.log(users, "userss");
 
-  const tabledData = props.tableRecords;  
+  const tabledData = props.tableRecords;
+  const dispatch = useDispatch();
   //const tabledData = props.tableRecords;
 
- // const { transactionData, setTransactionData } = useGlobalContext(tabledData);
+  // const { transactionData, setTransactionData } = useGlobalContext(tabledData);
 
   const [state, setState] = useState({
     transactionDate: "",
@@ -28,6 +29,10 @@ function Table(props) {
     receipt: "",
     notes: "",
   });
+
+  const handleDelete = (id) => {
+    dispatch(deleteTransaction({ id: id }));
+  };
 
   // const navigate = useNavigate();
 
@@ -66,8 +71,7 @@ function Table(props) {
 
   const { id } = useParams();
 
- // console.log(records, "records");
-
+  // console.log(records, "records");
 
   // const handleDelete = (outIndex) => {
   //   console.log(transactionData,"ttttt");
@@ -77,8 +81,8 @@ function Table(props) {
   //       console.log(outIndex, "out");
   //       console.log(inIndex, "in");
   //       console.log(data, "data");
-        
-  //       return data;  
+
+  //       return data;
   //     }
   //   });
 
@@ -165,12 +169,12 @@ function Table(props) {
           <tr>
             {/* <th>id</th> */}
             <th>Transaction Date</th>
-            <th >Month Year</th>
-            <th >Transaction Type</th>
+            <th>Month Year</th>
+            <th>Transaction Type</th>
             <th>From Account</th>
-            <th >To Account</th>
-            <th >Amount</th>
-            <th >Receipt</th>
+            <th>To Account</th>
+            <th>Amount</th>
+            <th>Receipt</th>
             <th>Notes</th>
             <th>View</th>
             <th>Edit</th>
@@ -198,7 +202,7 @@ function Table(props) {
               <td>
                 {" "}
                 <Link
-                  to={`/transaction/viewDetail/${item.id}`}
+                  to={`/view/${item.id}`}
                   //state={item}
                   className="post"
                 >
@@ -214,7 +218,10 @@ function Table(props) {
               </td>
               <td>
                 delete
-                {/* <DeleteIcon onClick={() => handleDelete(item.id)}></DeleteIcon> */}
+                <button
+                  value="delete"
+                  onClick={() => handleDelete(item.id)}
+                ></button>
               </td>
             </tr>
           ))}

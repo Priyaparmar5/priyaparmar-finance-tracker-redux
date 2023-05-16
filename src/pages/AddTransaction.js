@@ -1,7 +1,10 @@
 import "../App.css";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { addTransaction } from "../redux/ducks/TransactionReducer";
+import {
+  addTransaction,
+  updateTransaction,
+} from "../redux/ducks/TransactionReducer";
 import { useState, useEffect, React, useContext } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 //import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
@@ -20,9 +23,10 @@ import {
 function AddTransaction() {
   const [formError, setFormError] = useState({});
 
+  
   const dispatch = useDispatch();
   const users = useSelector((state) => state.transactions.value);
-  //const { transactionData, setTransactionData } = useGlobalContext();
+  const { transactionData, setTransactionData } = useState(users);
 
   const initialValues = {
     transactionDate: "",
@@ -70,14 +74,14 @@ function AddTransaction() {
       .test("required", "please select file", (value) => {
         return value && value.length;
       })
-      .test("fileSize", "File size is too large", (value) => {
-        if (value && value[0].size <= 1048576) return true;
+      // .test("fileSize", "File size is too large", (value) => {
+      //   if (value && value[0].size <= 1048576) return true;
 
-        if (typeof value === String && value.startswith("data:receipt")) {
-          return true;
-        }
-        return false;
-      })
+      //   if (typeof value === String && value.startswith("data:receipt")) {
+      //     return true;
+      //   }
+      //   return false;
+      // })
       .test(
         "fileType",
         "Only JPEG, PNG, and GIF files are allowed",
@@ -94,7 +98,7 @@ function AddTransaction() {
   const {
     register,
     trigger,
-   // handleSubmit,
+    handleSubmit,
     watch,
     setValue,
     formState: { errors },
@@ -271,6 +275,7 @@ function AddTransaction() {
   };
   //prefilled value
   useEffect(() => {
+    setFormData(users);
     Object.entries(formData).forEach(([key, value]) => {
       // if (key === "receipt" && value) {
       //   const fileName = value.split("/").pop();
@@ -284,7 +289,7 @@ function AddTransaction() {
       setValue(key, value);
     });
     setImagePreview(formData.receipt);
-  }, [formData, setValue]);
+  }, [formData, setValue, setFormData]);
 
   //
   // const handleSelectImage = (event) => {
@@ -387,21 +392,24 @@ function AddTransaction() {
   const { id } = useParams();
   console.log({ id }, "param");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    dispatch(
-      addTransaction({ id: users[users.length - 1].id + 1, initialValues })
-    );
+  
+  const onSubmit = async (e) => {
+    // e.preventDefault();
+    // dispatch(
+    //   addTransaction({ id: users[users.length - 1].id + 1, initialValues })
+    // );
     const value = { ...e };
 
     const isImg64 = typeof e.receipt === "string";
 
-    if (!isImg64) {
-      const img = await getBase64(e.receipt[0]);
-      console.log(img, "imggggg");
-      e.receipt = img;
-    }
-
+    // if (!isImg64) {
+    //   const img = await getBase64(e.receipt[0]);
+    //   console.log(img, "imggggg");
+    //   e.receipt = img;
+    // }
+    const img = await getBase64(e.receipt[0]);
+    console.log(img, "imggggg");
+    e.receipt = img;
     // const dataFile = new FileReader();
     // dataFile.addEventListener("load", () => {
     //   const val = { ...formData, receipt: dataFile };
@@ -417,54 +425,68 @@ function AddTransaction() {
       fromAccount: value.fromAccount,
       toAccount: value.toAccount,
       amount: value.amount,
-      receipt: value.receipt,
+      receipt: img,
       notes: value.notes,
     };
     //setFormData(data);
     console.log(data, "datuuuu");
 
     console.log("hello");
-    // if (transactionData) {
-    //   const retrivedata = transactionData || [];
-    //   console.log("id", id);
-    //   if (id) {
-    //     for (const e in retrivedata) {
-    //       if (parseInt(retrivedata[e].id) === parseInt(id)) {
-    //         data["id"] = id;
-    //         retrivedata[e] = data;
-    //       }
-    //     }
-    //     console.log(retrivedata, "data");
-    //     alert("update successfully");
-    //   } else {
-    //     console.log("in insert");
-    //     const previd = retrivedata[retrivedata.length - 1].id;
-    //     data["id"] = parseInt(previd) + 1;
-    //     retrivedata.push(data);
-    //     alert("insert successfully");
-    //   }
-    //   setTransactionData(retrivedata);
-    //   //localStorage.setItem("key", JSON.stringify(retrivedata));
-    // } else {
-    //   data["id"] = 1;
-    //   // localStorage.setItem("key", JSON.stringify([data]));
-    //   setTransactionData([data]);
-    // }
-    //navigate("/viewData");
-    // console.log("transactionnn", transactionData);
+    if (users) {
+      console.log("in usersss");
+      const retrivedata = users;
+      console.log("id...", id);
+      if (id) {
+        console.log("in update");
+        // for (const e in retrivedata) {
+        //   if (parseInt(retrivedata[e].id) === parseInt(id)) {
+        //     data["id"] = id;
+        //     retrivedata[e] = data;
+        //   }
+        // 
+        // }
+        dispatch(updateTransaction({data, id:id}));
+
+       // setFormData(retrivedata);
+        console.log(data, "dataaaaa");
+        console.log(id, "dataaaaaid");
+        alert("update successfully");
+      } else {
+        console.log("in insert");
+        const previd = retrivedata[retrivedata.length - 1].id;
+        console.log(previd, "previd");
+        data["id"] = parseInt(previd) + 1;
+        console.log(data["id"], "previd");
+        // retrivedata = data;
+        // retrivedata.push(data);
+        console.log(data, "rsssss");
+        dispatch(addTransaction(data));
+        setFormData(retrivedata);
+        console.log(retrivedata, "data");
+        alert("insert successfully");
+      }
+
+      //localStorage.setItem("key", JSON.stringify(retrivedata));
+    } else {
+      data["id"] = 1;
+      // localStorage.setItem("key", JSON.stringify([data]));
+      dispatch(addTransaction([data]));
+    }
+    navigate("/ViewData");
+    console.log("transactionnn", dispatch(addTransaction));
   };
 
   //const retrivedata = JSON.parse(localStorage.getItem("key")) || [];
-  // const retrivedata = transactionData || [];
+  const retrivedata = users || [];
 
   useEffect(() => {
-    // for (const e in retrivedata) {
-    //   if (parseInt(retrivedata[e].id) === parseInt(id)) {
-    //     setFormData(retrivedata[e]);
-    //     console.log(retrivedata[e], "retrieesfsd");
-    //     break;
-    //   }
-    // }
+    for (const e in retrivedata) {
+      if (parseInt(retrivedata[e].id) === parseInt(id)) {
+        setFormData(retrivedata[e]);
+        console.log(retrivedata[e], "retrieesfsd");
+        break;
+      }
+    }
   }, []);
   return (
     <>
@@ -473,7 +495,7 @@ function AddTransaction() {
           ViewData
         </Link>
       </ul>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="section">
           <div className="row">
             <div className="container">

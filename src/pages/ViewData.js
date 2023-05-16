@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from "react";
 import "../App.css";
 import { Link, Outlet, json, useNavigate, useParams } from "react-router-dom";
-import { useGlobalContext } from "../context/TransactionContext";
+//import { useGlobalContext } from "../context/TransactionContext";
 import Table from "./Table";
 import { groupBy } from "lodash";
+import { useSelector, useDispatch } from "react-redux";
 
 function ViewData() {
-
   const navigate = useNavigate();
   const [myLocalStorageData, setMyLocalStorageData] = useState([]);
   const [groupData, setGroupData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 3;
   const lastIndex = currentPage * recordsPerPage;
-  const firstIndex = lastIndex - recordsPerPage;  
+  const firstIndex = lastIndex - recordsPerPage;
 
   const records = [...myLocalStorageData].slice(firstIndex, lastIndex);
   //const groupData = [...groupData].slice(firstIndex, lastIndex);
 
   const page = Math.ceil(myLocalStorageData.length / recordsPerPage);
 
-  const {transactionData,setTransactionData} = useGlobalContext();
+  const transactionData = useSelector((state) => state.transactions.value);
 
   const handleLogout = (id) => {
     localStorage.removeItem("token");
@@ -36,8 +36,8 @@ function ViewData() {
   //       console.log(outIndex, "out");
   //       console.log(inIndex, "in");
   //       console.log(data, "data");
-        
-  //       return data;  
+
+  //       return data;
   //     }
   //   });
 
@@ -45,39 +45,40 @@ function ViewData() {
   //   console.log(val,"vallll");
   //   //localStorage.setItem("key", JSON.stringify(val));
   // };
-  const {id} = useParams();
+  const { id } = useParams();
 
-  const handleDelete = (id) => {
-    let updatedData = [];
-    if (id) {
-      if (!myLocalStorageData) {
-        updatedData = transactionData.filter(obj => obj != id);
-        setTransactionData(updatedData);
-      }
-      else {
-        Object.keys(groupData).forEach((groupCol) => {
-          updatedData = updatedData.concat(
-            groupData[groupCol] = groupData[groupCol].filter((item) => item.id != id)
-          )
-        });
-        setGroupData((prevGrpData) => {
-          const newGrpId = {};
-          Object.keys(prevGrpData).forEach((groupCol) => {
-            newGrpId[groupCol] = prevGrpData[groupCol].filter((item) => item.id != id)
-          });
-          return newGrpId;
-        });
-        setMyLocalStorageData(updatedData);
-      }
-    }
-    else {
-      updatedData = [...myLocalStorageData]
-    }
-    setTransactionData(updatedData)
-  }
+  // const handleDelete = (id) => {
+  //   let updatedData = [];
+  //   if (id) {
+  //     if (!myLocalStorageData) {
+  //       updatedData = transactionData.filter(obj => obj != id);
+  //       setTransactionData(updatedData);
+  //     }
+  //     else {
+  //       Object.keys(groupData).forEach((groupCol) => {
+  //         updatedData = updatedData.concat(
+  //           groupData[groupCol] = groupData[groupCol].filter((item) => item.id != id)
+  //         )
+  //       });
+  //       setGroupData((prevGrpData) => {
+  //         const newGrpId = {};
+  //         Object.keys(prevGrpData).forEach((groupCol) => {
+  //           newGrpId[groupCol] = prevGrpData[groupCol].filter((item) => item.id != id)
+  //         });
+  //         return newGrpId;
+  //       });
+  //       setMyLocalStorageData(updatedData);
+  //     }
+  //   }
+  //   else {
+  //     updatedData = [...myLocalStorageData]
+  //   }
+  //   setTransactionData(updatedData)
+  // }
 
-  //const localData = JSON.parse(localStorage.getItem("key"));  
-  const localData = transactionData;  
+  //const localData = JSON.parse(localStorage.getItem("key"));
+
+  const localData = transactionData;
 
   const handleGroupChange = (e) => {
     const resultdata = {};
@@ -102,7 +103,6 @@ function ViewData() {
     console.log(resultdata, "resulttttt");
   };
 
-
   console.log(Object.keys(groupData).length);
   return (
     <>
@@ -117,7 +117,9 @@ function ViewData() {
       {localData ? (
         <>
           <>
-          <Link to={'/add'} className="add-btn" >Add transaction</Link>
+            <Link to={"/add"} className="add-btn">
+              Add transaction
+            </Link>
             <select
               name="selectData"
               onChange={handleGroupChange}
@@ -133,7 +135,7 @@ function ViewData() {
 
             {groupData.length === 0 ? (
               <>
-                <Table tableRecords={localData} handleDelete={handleDelete}  />
+                <Table tableRecords={localData} />
                 <br></br>
               </>
             ) : (
@@ -142,7 +144,7 @@ function ViewData() {
                   {data !== "undefined" ? (
                     <>
                       <h3> Group by: {data}</h3>
-                      <Table tableRecords={groupData[data]} handleDelete={handleDelete}/>
+                      <Table tableRecords={groupData[data]} />
                     </>
                   ) : null}
                 </>
