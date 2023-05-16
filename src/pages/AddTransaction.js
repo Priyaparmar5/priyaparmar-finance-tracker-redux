@@ -21,7 +21,7 @@ function AddTransaction() {
   const [formError, setFormError] = useState({});
 
   const dispatch = useDispatch();
-  const users = useSelector((state) => state.transactions);
+  const users = useSelector((state) => state.transactions.value);
   //const { transactionData, setTransactionData } = useGlobalContext();
 
   const initialValues = {
